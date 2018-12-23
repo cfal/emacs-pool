@@ -1,0 +1,19 @@
+{
+  "name": "emacs-pool",
+  "version": "1.0.0",
+  "description": "Emacs daemon pool",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cfal/emacs-pool.git"
+  },
+  "author": "Alex Lau",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cfal/emacs-pool/issues"
+  },
+  "homepage": "https://github.com/cfal/emacs-pool"
+}
