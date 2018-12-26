@@ -1,6 +1,6 @@
 # emacs-pool
 
-emacs-pool is an emacs daemon pool to speed up emacs startup time, without having shared buffers across multiple emacs clients.
+emacs-pool is an emacs daemon pool to speed up emacs startup without having to think about daemon mode.
 
 emacs-pool consists of two components:
 
@@ -13,7 +13,7 @@ By default, the server will destroy used daemons after the client disconnects an
 ## Requirements
 
 - nodejs build with async/await support
-- emacs 26.x (for --fg-daemon flag)
+- emacs 26.1 (for --fg-daemon flag)
 
 ## Usage
 
@@ -40,7 +40,8 @@ exec node emacs-pool/src/client.js \
 
 ## Notes
 
-- `client.js` will automatically start up the server in the background. Alternatively, you can explicitly start up `server.js`, which supports the same command-line arguments.
+- `client.js` will automatically start up the server in the background. Alternatively, you can explicitly run `server.js`, which supports the same command line arguments.
 
-- More flags are available in `opt.js`.
+- To restart the emacs pool server, use `killall emacs-pool`, which defaults to using SIGTERM. Using SIGKILL (-9) would not give the server time to shutdown the emacs daemons, and you would have to do so manually.
 
+- More flags are available in `opts.js`.

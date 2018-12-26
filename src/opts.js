@@ -9,8 +9,10 @@ const DEFAULT_OPTS = {
   emacsPath: 'emacs',
   minPoolSize: 4,
   minAvailableCount: 4,
+  // when singleUse this is true, the daemon is killed and a new daemon is restarted after each use.
+  singleUse: true,
+  // unparsed arguments will be passed to emacs.
   emacsArgs: [],
-  singleUse: true // if this is true, the daemon is killed and a new daemon is restarted after each use.
 };
 
 module.exports = function(isServer) {

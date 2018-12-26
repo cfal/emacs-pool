@@ -39,6 +39,10 @@ const exists = util.promisify(fs.exists);
     const daemonName = await pool.take();
     conn.on('end', function() {
       const i = connections.indexOf(conn);
+      if (i < 0) {
+        console.error("Could not find active connection!");
+        return;
+      }
       connections.splice(i, 1);
       pool.give(daemonName);
     });
@@ -72,6 +76,8 @@ const exists = util.promisify(fs.exists);
 
     connections.forEach(conn => {
       conn.removeAllListeners('end');
+      conn.removeAllListeners('error');
+      conn.on('error', function(){});
       try {
         conn.end();
         conn.destroy();

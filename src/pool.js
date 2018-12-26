@@ -25,9 +25,9 @@ class Pool {
 
   _createName() {
     while (true) {
-      let name = String(Math.random().toString(36));
-      let i = name.indexOf('.');
-      if (i < 0) break;
+      let name = Math.random().toString(36);
+      const i = name.indexOf('.');
+      if (i < 0) continue;
       name = name.slice(i + 1).replace(/[0-9]/g, '');
       if (name.length < 3) continue;
       name = name.slice(0, 3);
@@ -100,8 +100,8 @@ class Pool {
           p(data.toString().trimRight());
         });
 
-        // Even after the "Starting Emacs daemon message, the socket file
-        // usually still takes a little time to create.
+        // Even after the "Starting Emacs daemon" message, the socket file
+        // still takes a little time to create.
         setTimeout(() => {
           this.daemons[name] = {
             name,
@@ -132,6 +132,7 @@ class Pool {
     // It's still possible that there's a locked file and (kill-emacs) didn't cause emacs to stop.
     setTimeout(() => {
       try {
+        // TODO: check if SIGTERM is guaranteed to kill it here, maybe SIGKILL is necessary.
         proc.kill('SIGTERM');
       } catch (err) {
       }
@@ -161,9 +162,9 @@ class Pool {
         });
         await this._kill(daemonName, proc);
       } else {
-        // if immediate is false, let the proc 'close' event code deal with removing it.
+        // When wait is false, let the proc 'close' event handle removal.
         console.log(`Sending kill signal to daemon ${daemonName}.`);
-        // set daemon available to false so that it doesn't get given out before awaiting the kill.
+        // Set daemon available to false so that it isn't given out while awaiting the kill.
         daemon.available = false;
         await this._kill(daemonName, proc);
         resolve(true);
@@ -201,7 +202,8 @@ class Pool {
 
     this.culling = true;
     // Put this in a loop to continuously recalculate available daemons and cull.
-    // This is because we await this._remove in the loop and availability could change during that time.
+    // This is because we await this._remove in the loop and availability could
+    // change during that time.
     console.log(`Starting to remove extra daemons.`);
     let removed = 0;
     while (!this.destroyed) {
@@ -295,8 +297,9 @@ class Pool {
     if (this.singleUse) {
       console.log(`Single-use enabled, removing daemon.`);
       await this._remove(daemonName);
-      if (this._getAvailable().length >= this.minAvailableCount) {
-        console.log(`Not creating new daemon after single-use daemon removal, already enough available.`);
+      const availableCount = this._getAvailable().length;
+      if (availableCount >= this.minAvailableCount) {
+        console.log(`Not creating new daemon after single-use daemon removal, enough availability (${availableCount}).`);
       } else {
         console.log(`Creating new daemon to replace used daemon.`);
         await this._add();
