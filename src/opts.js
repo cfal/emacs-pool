@@ -35,10 +35,17 @@ module.exports = function(isServer) {
       const emacsPath = args[++i];
       if (!emacsPath) throw new Error('No emacs path provided.');
       opts.emacsPath = emacsPath;
-    } else if (isServer && arg == '--min-pool-size') {
+    } else if (arg == '--min-pool-size') {
       const minPoolSize = args[++i];
-      if (!minPoolSize) throw new Error('No minimum pool size provided.');
+      if (!minPoolSize || minPoolSize < 1) throw new Error('No minimum pool size provided.');
       opts.minPoolSize = minPoolSize;
+    } else if (arg == '--min-available') {
+      const minAvailableCount = args[++i];
+      if (!minAvailableCount || minAvailableCount < 1)
+        throw new Error('No minimum available count provided.');
+      opts.minAvailableCount = minAvailableCount;
+    } else if (arg == '--no-single-use') {
+      opts.singleUse = false;
     } else {
       opts.emacsArgs.push(arg);
     }

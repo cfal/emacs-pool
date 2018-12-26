@@ -8,7 +8,7 @@ emacs-pool consists of two components:
 
 - `client.js`: Asks the server for a shiny new emacs daemon, and then runs `emacsclient` for you.
 
-By default, the server will destroy used daemons after the client disconnects and start a new one. See `opts.js` for now to change this behavior.
+By default, the server will destroy used daemons after the client disconnects and start a new one. See the `--no-single-use` flag to change this behavior.
 
 ## Requirements
 
@@ -25,14 +25,20 @@ Create a shell script in your `bin` directory with the following contents, and u
 exec node emacs-pool/src/client.js \
   [--sock <emacs-pool socket path>] \
   [--min-pool-size <size>] \
+  [--min-available <count>] \
+  [--no-single-use] \
   [--emacs-path <path to emacs binary>] \
-  [--emacs-client-path <path to emacs client binary>]
+  [--emacs-client-path <path to emacsclient binary>]
   $@
 ```
 
 - `sock`: Unix domain socket for the pool server. Defaults to `$HOME/.emacs-pool.sock`.
 
 - `min-pool-size`: Minimum daemon pool size. Defaults to 4.
+
+- `min-available`: Minimum available count. Extra daemons will be created if the number of available daemons drops below this number. Defaults to 4.
+
+- `no-single-use`: Disables single use mode, ie. daemons will stay alive and be re-used. Note that this means open unsaved files and other state will be visible during following client sessions.
 
 - `emacs-path`: Full path to the `emacs` binary. Defaults to `emacs`.
 
