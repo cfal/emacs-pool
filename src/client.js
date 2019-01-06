@@ -12,6 +12,26 @@ function debug(str) {
 }
 
 function run() {
+  const beautifiedArgs = opts.emacsArgs.map(arg => {
+    const hasSpace = arg.indexOf(' ') >= 0;
+    const hasQuotes = arg[0] == '"' && arg[arg.length - 1] == '"';
+
+    if (hasSpace != hasQuotes) {
+      if (hasSpace) {
+        arg = `"${arg}"`;
+      } else {
+        arg = arg.slice(1, arg.length - 1);
+      }
+    }
+
+    return arg;
+  }).join(' ');
+
+  // epc for emacs pool client. This short acronym was chosen as the modified process.title's length
+  // should not be longer than the original. Also doesn't take up much space in the tmux window
+  // bar :)
+  process.title = `epc ${beautifiedArgs}`;
+
   const sock = net.connect(opts.sockPath, () => {
     debug('Connected to pool socket.');
   });

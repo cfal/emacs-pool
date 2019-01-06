@@ -19,9 +19,12 @@ By default, the server will destroy used daemons after the client disconnects an
 
 Create a shell script in your `bin` directory with the following contents, and use it instead of `emacs` or `emacsclient`:
 
-```
+```sh
 #!/bin/sh
 
+# Start the client script. The current directory (.) is appended to the arguments that will be
+# passed to emacsclient so that emacsclient will not automatically close if all of the initially
+# specified buffers are closed.
 exec node emacs-pool/src/client.js \
   [--sock <emacs-pool socket path>] \
   [--min-pool-size <size>] \
@@ -29,7 +32,8 @@ exec node emacs-pool/src/client.js \
   [--no-single-use] \
   [--emacs-path <path to emacs binary>] \
   [--emacs-client-path <path to emacsclient binary>]
-  $@
+  "$@" \
+  .
 ```
 
 - `sock`: Unix domain socket for the pool server. Defaults to `$HOME/.emacs-pool.sock`.
