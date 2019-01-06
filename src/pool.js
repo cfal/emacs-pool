@@ -185,6 +185,7 @@ class Pool {
     }
 
     console.log(`Increase pool size complete, created ${added} daemons.`);
+    this.increasing = false;
   }
 
   _scheduleIncrease() {
