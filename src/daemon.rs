@@ -16,6 +16,7 @@ use futures::{future, select};
 
 use rand::Rng;
 
+use std::fs;
 use std::process::Stdio;
 use std::time::Duration;
 
@@ -273,6 +274,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .expect("Pool size is not a valid number");
 
     run_daemon(&sock_path, emacs_path, pool_size).await;
+
+    fs::remove_file(&sock_path).unwrap();
 
     Ok(())
 }
