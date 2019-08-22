@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sock_path="$HOME/.epc.sock"
-log_path="$HOME/.emacs-pool-rs.log"
+log_path="/dev/null"
 emacs_bin_path="$HOME/emacs-build/bin"
 
 if [[ "${OSTYPE}" == "darwin"* ]]; then
