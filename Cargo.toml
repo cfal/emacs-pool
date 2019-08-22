@@ -1,0 +1,22 @@
+[package]
+name = "emacs-pool-rs"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+log = "*"
+env_logger = "*"
+rand = "*"
+clap = "*"
+futures-preview = { version = "=0.3.0-alpha.18", features = ["async-await", "nightly"] }
+tokio = { git = "https://github.com/tokio-rs/tokio" }
+tokio-net = { git = "https://github.com/tokio-rs/tokio", features = ["process", "signal"] }
+tokio-timer = { git = "https://github.com/tokio-rs/tokio" }
+
+[[bin]]
+name = "emacs-pool-daemon"
+path = "src/daemon.rs"
+
+[[bin]]
+name = "emacs-pool-client"
+path = "src/client.rs"
