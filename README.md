@@ -1,6 +1,6 @@
 # emacs-pool
 
-emacs-pool is an emacs daemon pool that preloads single-use emacs daemons in the background. It aims to provide an equivalent experience to non-daemon mode emacs without the slow startup.
+emacs-pool is an emacs daemon pool that preloads single-use emacs daemons in the background. It aims to provide an equivalent experience to non-daemon mode emacs but with a faster startup.
 
 emacs-pool consists of two binaries:
 
@@ -18,7 +18,7 @@ Requirements:
 
 ## Usage
 
-Link or copy `scripts/run.sh` to somewhere on your path and use it instead of emacs. The script will automatically start up `emacs-pool-daemon` in the background if necessary before invoking `emacs-pool-client`. Open the script to configure socket path and emacs paths.
+Link or copy `scripts/run.sh` to somewhere on your path and use it instead of emacs. The script will automatically start up `emacs-pool-daemon` in the background if necessary before invoking `emacs-pool-client`. Edit the script variables at the top to configure socket path and emacs paths.
 
 ## Notes
 
