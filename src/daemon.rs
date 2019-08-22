@@ -29,7 +29,7 @@ use tokio_net::signal::unix::{signal, SignalKind};
 
 use tokio_timer::sleep;
 
-const DEFAULT_POOL_SIZE: usize = 5;
+const DEFAULT_POOL_SIZE: usize = 3;
 
 struct Daemon {
     name: String,
