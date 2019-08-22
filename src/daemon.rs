@@ -24,17 +24,15 @@ use tokio::net::{UnixListener, UnixStream};
 use tokio::prelude::*;
 
 use tokio_net::process::{Child, ChildStderr, Command};
-use tokio_net::signal::{
-    self,
-    unix::{signal, SignalKind},
-};
+use tokio_net::signal::unix::{signal, SignalKind};
+
 use tokio_timer::sleep;
 
 const DEFAULT_POOL_SIZE: usize = 5;
 
 struct Daemon {
     name: String,
-    process: Child,
+    process: Option<Child>,
     stderr_reader: FramedRead<ChildStderr, LinesCodec>,
 }
 
@@ -58,7 +56,7 @@ impl Daemon {
         let stderr_reader = FramedRead::new(stderr, LinesCodec::new());
         Self {
             name,
-            process: child,
+            process: Some(child),
             stderr_reader,
         }
     }
@@ -80,9 +78,24 @@ impl Daemon {
         }
     }
 
-    pub fn kill(&mut self) {
-        if let Err(e) = self.process.kill() {
-            error!("Failed to kill daemon: {:?}", e);
+    pub async fn shutdown(&mut self) {
+        match self.process.take() {
+            Some(mut p) => {
+                // TODO: Send SIGTERM instead of SIGKILL.
+                if let Err(e) = p.kill() {
+                    error!("Failed to kill daemon {}: {:?}", &self.name, e);
+                }
+                // Need to wait for exit to avoid defunct processes.
+                match p.wait_with_output().await {
+                    Ok(output) => {
+                        debug!("Daemon {} exited with status {}", &self.name, output.status);
+                    }
+                    Err(e) => {
+                        error!("Error shutting down daemon {}: {:?}", &self.name, e);
+                    }
+                }
+            }
+            None => panic!("Shutdown called on dead daemon {}", &self.name),
         }
     }
 }
@@ -141,9 +154,7 @@ async fn handle_client(mut socket: UnixStream, mut daemon: Daemon) {
     }
 
     info!("Stopping daemon: {}", daemon_name);
-
-    // TODO: Send SIGTERM instead of SIGKILL.
-    daemon.kill();
+    daemon.shutdown().await;
 }
 
 async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
@@ -206,7 +217,8 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
 
     info!("Shutting down..");
     while !available_daemons.is_empty() {
-        available_daemons.pop().unwrap().kill();
+        let mut daemon = available_daemons.pop().unwrap();
+        daemon.shutdown().await;
     }
 }
 
