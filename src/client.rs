@@ -87,11 +87,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let emacsclient_path = args.value_of("emacs-client-path").unwrap_or("emacsclient");
 
-    let files: Vec<String> = args
-        .values_of("file")
-        .unwrap()
-        .map(|s| s.to_string())
-        .collect();
+    let files: Vec<String> = match args.values_of("file") {
+        Some(vals) => vals.map(|s| s.to_string()).collect(),
+        None => vec![],
+    };
 
     run_client(&sock_path, emacsclient_path, files).await;
 
