@@ -96,6 +96,7 @@ impl Daemon {
 }
 
 async fn prepare_new_daemon(emacs_path: &str) -> Daemon {
+    // TODO: Ensure the created name isn't already used.
     let mut name = String::from("pool-");
     name.push_str(rand::thread_rng().gen::<u32>().to_string().as_ref());
 

@@ -11,8 +11,8 @@ use crate::common::*;
 use clap::{App, Arg};
 
 use std::process::{Command, Stdio};
-use tokio::codec::{FramedRead, LinesCodec};
 
+use tokio::codec::{FramedRead, LinesCodec};
 use tokio::net::UnixStream;
 use tokio::prelude::*;
 
