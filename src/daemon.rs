@@ -201,6 +201,7 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
                     let daemon = match daemon_opt {
                         Some(daemon) => daemon,
                         None => {
+                            info!("No daemons were prepared, spawning immediately..");
                             prepare_new_daemon(&cloned_path).await
                         }
                     };
