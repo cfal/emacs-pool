@@ -126,9 +126,10 @@ async fn handle_client(mut socket: UnixStream, mut daemon: Daemon) {
     if let Err(e) = socket.write_all(daemon_str.as_bytes()).await {
         error!("Failed to write daemon info to client socket: {:?}", e);
     } else {
-        // Wait for socket to close
+        // Wait for socket to close.
+        // TODO: Is there a way to do this without reading?
         loop {
-            let mut buf: [u8; 1024] = [0; 1024];
+            let mut buf: [u8; 80] = [0; 80];
             match socket.read(&mut buf).await {
                 Ok(_n) if _n == 0 => {
                     // Socket closed.
