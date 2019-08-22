@@ -12,6 +12,7 @@ fi
 
 if [ -z "${is_running}" ]; then
     echo "Starting daemon."
+    rm -f "${sock_path}"
     RUST_LOG=info nohup emacs-pool-daemon --sock "${sock_path}" --emacs "${emacs_bin_path}/emacs" &>"${log_path}" &
     sleep 0.5
 fi
