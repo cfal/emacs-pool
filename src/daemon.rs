@@ -102,7 +102,7 @@ impl Daemon {
 }
 
 async fn prepare_new_daemon(emacs_path: &str) -> Daemon {
-    let mut name = String::from("ep2-");
+    let mut name = String::from("pool-");
     name.push_str(rand::thread_rng().gen::<u32>().to_string().as_ref());
 
     let mut daemon = Daemon::new(emacs_path, name.clone());
