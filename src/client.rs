@@ -65,7 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("PATH")
                 .help(&format!(
                     "Sets the socket path (Default: $HOME/{})",
-                    DEFAULT_SOCK_FILENAME
+                    default_sock_filename()
                 ))
                 .takes_value(true),
         )
@@ -83,7 +83,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sock_path = args
         .value_of("sock")
         .map(|val| val.to_string())
-        .unwrap_or_else(get_default_sock_path);
+        .unwrap_or_else(default_sock_path);
 
     let emacsclient_path = args.value_of("emacs-client-path").unwrap_or("emacsclient");
 

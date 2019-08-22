@@ -38,21 +38,15 @@ struct Daemon {
 }
 
 impl Daemon {
-    fn daemon_command(emacs_path: &str, name: &str) -> Command {
+    pub fn new(emacs_path: &str, name: String) -> Self {
         let mut cmd = Command::new(emacs_path);
-
         cmd.arg(format!("--fg-daemon={}", name));
 
         // All daemon output is sent on stderr.
         cmd.stderr(Stdio::piped());
 
-        cmd
-    }
+        let mut child = cmd.spawn().expect("Could not spawn emacs daemon");
 
-    pub fn new(emacs_path: &str, name: String) -> Self {
-        let mut child = Self::daemon_command(emacs_path, &name)
-            .spawn()
-            .expect("Could not spawn emacs daemon");
         let stderr = child.stderr().take().expect("Could not get stderr");
         let stderr_reader = FramedRead::new(stderr, LinesCodec::new());
         Self {
@@ -236,7 +230,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .value_name("PATH")
                 .help(&format!(
                     "Sets the socket path (Default: $HOME/{})",
-                    DEFAULT_SOCK_FILENAME
+                    default_sock_filename()
                 ))
                 .takes_value(true),
         )
@@ -264,7 +258,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sock_path = args
         .value_of("sock")
         .map(|val| val.to_string())
-        .unwrap_or_else(get_default_sock_path);
+        .unwrap_or_else(default_sock_path);
 
     let emacs_path = args.value_of("emacs-path").unwrap_or("emacs");
 
