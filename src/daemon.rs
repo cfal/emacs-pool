@@ -190,14 +190,14 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
         select! {
             new_client = accept_future => {
                 let (mut socket, _) = new_client.unwrap();
-                let daemon_opt = available_daemons.pop();
-                let cloned_path = emacs_path.to_string();
+                let available_daemon = available_daemons.pop();
+                let emacs_path = emacs_path.to_string();
                 tokio::spawn(async move {
-                    let daemon = match daemon_opt {
-                        Some(daemon) => daemon,
+                    let daemon = match available_daemon {
+                        Some(d) => d,
                         None => {
-                            info!("No daemons were prepared, spawning immediately..");
-                            prepare_new_daemon(&cloned_path).await
+                            info!("No available daemon, spawning..");
+                            prepare_new_daemon(&emacs_path).await
                         }
                     };
                     handle_client(socket, daemon).await;
