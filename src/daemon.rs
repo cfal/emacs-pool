@@ -213,10 +213,13 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
     }
 
     info!("Shutting down..");
-    while !available_daemons.is_empty() {
-        let mut daemon = available_daemons.pop().unwrap();
-        daemon.shutdown().await;
-    }
+    future::join_all(
+        available_daemons
+            .iter_mut()
+            .map(Daemon::shutdown)
+            .map(Box::pin),
+    )
+    .await;
 }
 
 #[tokio::main]
