@@ -205,7 +205,7 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
                 });
             }
             new_daemon = new_daemon_future => {
-                available_daemons.push(new_daemon);
+                available_daemons.insert(0, new_daemon);
             }
             _ = sighup_future => break,
             _ = sigint_future => break,
