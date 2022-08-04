@@ -72,7 +72,7 @@ impl Daemon {
                 // Need to wait for exit to avoid defunct processes.
                 match p.wait_with_output().await {
                     Ok(output) => {
-                        debug!("Daemon {} exited with status {}", &self.name, output.status);
+                        info!("Daemon {} exited with status {}", &self.name, output.status);
                     }
                     Err(e) => {
                         error!("Error shutting down daemon {}: {:?}", &self.name, e);
@@ -170,7 +170,7 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
     let mut sigterm_stream = signal(SignalKind::terminate()).unwrap();
     let mut sigterm_future = Box::pin(sigterm_stream.recv()).fuse();
 
-    info!("Running main daemon loop..");
+    info!("Listening for clients");
 
     loop {
         let mut accept_future = Box::pin(listener.accept().fuse());
