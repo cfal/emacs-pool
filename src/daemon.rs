@@ -5,8 +5,9 @@ use std::process::Stdio;
 use std::time::Duration;
 
 use clap::{App, Arg};
+use env_logger::Builder;
 use futures::{future, select, FutureExt, StreamExt};
-use log::{debug, error, info};
+use log::{debug, error, info, LevelFilter};
 use rand::Rng;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{UnixListener, UnixStream};
@@ -216,7 +217,10 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
+    Builder::new()
+        .filter_level(LevelFilter::Info)
+        .parse_default_env()
+        .init();
 
     let args = App::new("emacs-pool-daemon")
         .arg(
