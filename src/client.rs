@@ -1,20 +1,13 @@
-#[macro_use]
-extern crate log;
-
-extern crate env_logger;
-
-extern crate clap;
-
 mod common;
 use crate::common::*;
 
 use clap::{App, Arg};
+use futures::StreamExt;
+use log::debug;
+use tokio::net::UnixStream;
+use tokio_util::codec::{FramedRead, LinesCodec};
 
 use std::process::{Command, Stdio};
-
-use tokio::codec::{FramedRead, LinesCodec};
-use tokio::net::UnixStream;
-use tokio::prelude::*;
 
 async fn run_client(sock_path: &str, emacsclient_path: &str, files: Vec<String>) {
     let stream = UnixStream::connect(sock_path).await.unwrap();
@@ -53,25 +46,28 @@ async fn run_client(sock_path: &str, emacsclient_path: &str, files: Vec<String>)
     debug!("stderr: {}", std::str::from_utf8(&output.stderr).unwrap());
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     let args = App::new("emacs-pool-client")
         .arg(
-            Arg::with_name("sock")
-                .short("s")
+            Arg::new("sock")
+                .short('s')
                 .long("sock")
                 .value_name("PATH")
-                .help(&format!(
-                    "Sets the socket path (Default: $HOME/{})",
-                    default_sock_filename()
-                ))
+                .help(
+                    format!(
+                        "Sets the socket path (Default: $HOME/{})",
+                        default_sock_filename()
+                    )
+                    .as_str(),
+                )
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("emacs-client-path")
-                .short("c")
+            Arg::new("emacs-client-path")
+                .short('c')
                 .long("emacsclient")
                 .value_name("FILE")
                 .help("Sets emacsclient binary location")

@@ -1,33 +1,21 @@
-#[macro_use]
-extern crate log;
-
-extern crate env_logger;
-
-extern crate rand;
-
-extern crate clap;
-
 mod common;
-use crate::common::*;
-
-use clap::{App, Arg};
-
-use futures::{future, select};
-
-use rand::Rng;
 
 use std::fs;
 use std::process::Stdio;
 use std::time::Duration;
 
-use tokio::codec::{FramedRead, LinesCodec};
+use clap::{App, Arg};
+use futures::{future, select, FutureExt, StreamExt};
+use log::{debug, error, info};
+use rand::Rng;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{UnixListener, UnixStream};
-use tokio::prelude::*;
+use tokio::process::{Child, ChildStderr, Command};
+use tokio::signal::unix::{signal, SignalKind};
+use tokio::time::sleep;
+use tokio_util::codec::{FramedRead, LinesCodec};
 
-use tokio_net::process::{Child, ChildStderr, Command};
-use tokio_net::signal::unix::{signal, SignalKind};
-
-use tokio_timer::sleep;
+use crate::common::*;
 
 const DEFAULT_POOL_SIZE: usize = 3;
 
@@ -47,7 +35,7 @@ impl Daemon {
 
         let mut child = cmd.spawn().expect("Could not spawn emacs daemon");
 
-        let stderr = child.stderr().take().expect("Could not get stderr");
+        let stderr = child.stderr.take().expect("Could not get stderr");
         let stderr_reader = FramedRead::new(stderr, LinesCodec::new());
         Self {
             name,
@@ -77,7 +65,7 @@ impl Daemon {
         match self.process.take() {
             Some(mut p) => {
                 // TODO: Send SIGTERM instead of SIGKILL.
-                if let Err(e) = p.kill() {
+                if let Err(e) = p.kill().await {
                     error!("Failed to kill daemon {}: {:?}", &self.name, e);
                 }
                 // Need to wait for exit to avoid defunct processes.
@@ -156,7 +144,7 @@ async fn handle_client(mut socket: UnixStream, mut daemon: Daemon) {
 
 async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
     debug!("Listening for clients at {}", sock_path);
-    let mut listener = UnixListener::bind(sock_path).expect("Could not bind socket");
+    let listener = UnixListener::bind(sock_path).expect("Could not bind socket");
 
     let mut available_daemons: Vec<Daemon> = vec![];
     {
@@ -174,9 +162,12 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
         }
     }
 
-    let mut sighup_future = Box::pin(signal(SignalKind::hangup()).unwrap().into_future());
-    let mut sigint_future = Box::pin(signal(SignalKind::interrupt()).unwrap().into_future());
-    let mut sigterm_future = Box::pin(signal(SignalKind::terminate()).unwrap().into_future());
+    let mut sighup_stream = signal(SignalKind::hangup()).unwrap();
+    let mut sighup_future = Box::pin(sighup_stream.recv()).fuse();
+    let mut sigint_stream = signal(SignalKind::interrupt()).unwrap();
+    let mut sigint_future = Box::pin(sigint_stream.recv()).fuse();
+    let mut sigterm_stream = signal(SignalKind::terminate()).unwrap();
+    let mut sigterm_future = Box::pin(sigterm_stream.recv()).fuse();
 
     info!("Running main daemon loop..");
 
@@ -190,7 +181,7 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
 
         select! {
             new_client = accept_future => {
-                let (mut socket, _) = new_client.unwrap();
+                let (socket, _) = new_client.unwrap();
                 let available_daemon = available_daemons.pop();
                 let emacs_path = emacs_path.to_string();
                 tokio::spawn(async move {
@@ -223,25 +214,28 @@ async fn run_daemon(sock_path: &str, emacs_path: &str, pool_size: usize) {
     .await;
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     let args = App::new("emacs-pool-daemon")
         .arg(
             Arg::with_name("sock")
-                .short("s")
+                .short('s')
                 .long("sock")
                 .value_name("PATH")
-                .help(&format!(
-                    "Sets the socket path (Default: $HOME/{})",
-                    default_sock_filename()
-                ))
+                .help(
+                    format!(
+                        "Sets the socket path (Default: $HOME/{})",
+                        default_sock_filename()
+                    )
+                    .as_str(),
+                )
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("emacs-path")
-                .short("e")
+                .short('e')
                 .long("emacs")
                 .value_name("FILE")
                 .help("Sets emacs binary location")
@@ -249,13 +243,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .arg(
             Arg::with_name("pool-size")
-                .short("p")
+                .short('p')
                 .long("pool-size")
                 .value_name("NUMBER")
-                .help(&format!(
-                    "Sets the daemon pool size (Default: {})",
-                    DEFAULT_POOL_SIZE
-                ))
+                .help(
+                    format!("Sets the daemon pool size (Default: {})", DEFAULT_POOL_SIZE).as_str(),
+                )
                 .takes_value(true),
         )
         .get_matches();
@@ -268,7 +261,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let emacs_path = args.value_of("emacs-path").unwrap_or("emacs");
 
     let pool_size = args
-        .value_of("pool_size")
+        .value_of("pool-size")
         .unwrap_or(DEFAULT_POOL_SIZE.to_string().as_ref())
         .parse::<usize>()
         .expect("Pool size is not a valid number");

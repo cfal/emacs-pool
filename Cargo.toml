@@ -8,10 +8,9 @@ log = "*"
 env_logger = "*"
 rand = "*"
 clap = "*"
-futures-preview = { version = "=0.3.0-alpha.18", features = ["async-await", "nightly"] }
-tokio = { git = "https://github.com/tokio-rs/tokio" }
-tokio-net = { git = "https://github.com/tokio-rs/tokio", features = ["process", "signal"] }
-tokio-timer = { git = "https://github.com/tokio-rs/tokio" }
+futures = "*"
+tokio = { version = "*", features = ["io-util", "macros", "net", "process", "rt", "signal", "time"] }
+tokio-util = { version = "*", features = ["codec"] }
 
 [[bin]]
 name = "emacs-pool-daemon"
