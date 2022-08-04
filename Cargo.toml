@@ -2,6 +2,13 @@
 name = "emacs-pool"
 version = "0.2.0"
 edition = "2021"
+license = "MIT"
+description = "An emacs daemon pool for fast emacs startups."
+homepage = "https://github.com/cfal/emacs-pool/"
+repository = "https://github.com/cfal/emacs-pool/"
+readme = "README.md"
+keywords = ["emacs", "emacs-startup"]
+categories = ["command-line-utilities", "text-editors"]
 
 [dependencies]
 log = "*"
