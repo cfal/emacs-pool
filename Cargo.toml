@@ -11,13 +11,13 @@ keywords = ["emacs", "emacs-startup"]
 categories = ["command-line-utilities", "text-editors"]
 
 [dependencies]
-log = "*"
-env_logger = "*"
-rand = "*"
-clap = "*"
-futures = "*"
-tokio = { version = "*", features = ["io-util", "macros", "net", "process", "rt", "signal", "time"] }
-tokio-util = { version = "*", features = ["codec"] }
+log = "0.4.17"
+env_logger = "0.9.0"
+rand = "0.8.5"
+clap = "3.2.16"
+futures = "0.3.21"
+tokio = { version = "1.20.1", features = ["io-util", "macros", "net", "process", "rt", "signal", "time"] }
+tokio-util = { version = "0.7.3", features = ["codec"] }
 
 [[bin]]
 name = "emacs-pool-daemon"
