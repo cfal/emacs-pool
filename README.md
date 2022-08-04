@@ -8,13 +8,17 @@ emacs-pool consists of two binaries:
 
 - `emacs-pool-client`: Asks `emacs-pool-daemon` for a new emacs daemon, and then runs `emacsclient` to connect to it. The emacs daemon will be destroyed after `emacsclient` is closed.
 
+## Installation
+
+Releases for certain architectures are available on GitHub, else you can build and install it yourself.
+
 ## Building
 
 Requirements:
-- A recent installation of Rust with async/await support
-- emacs 26.1 (for --fg-daemon flag)
+- Rust and Cargo installation
+- emacs 26.1 or newer (for --fg-daemon flag)
 
-`cargo install --path .` will install `emacs-pool-daemon` and `emacs-pool-client` to your cargo bin directory.
+`cargo install emacs-pool` will build and install `emacs-pool-daemon` and `emacs-pool-client` to your cargo bin directory.
 
 ## Usage
 
